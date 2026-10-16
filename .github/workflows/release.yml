@@ -70,6 +70,12 @@ jobs:
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
+      - name: Drop obsolete miniupnpd patches (fixes upstreamed in 2.3.11)
+        run: |
+          rm -f feeds/packages/net/miniupnpd/patches/020-descr-filter-fix.patch
+          rm -f feeds/packages/net/miniupnpd/patches/030-allow-private-fix.patch
+          rm -f feeds/packages/net/miniupnpd/patches/040-improve-logging.patch
+
       - name: Load repository signing key
         env:
           PONWRT_APK_PRIVATE_KEY: ${{ secrets.PONWRT_APK_PRIVATE_KEY }}
@@ -160,3 +166,4 @@ jobs:
             args+=(--prerelease)
           fi
           gh release create "${args[@]}"
+
