@@ -93,15 +93,16 @@ jobs:
 
       - name: Build ${{ matrix.target }}
         run: |
+          set -o pipefail
           if make -j"$(nproc)" 2>&1 | tee /tmp/world.log; then
-            true
+            :
           else
-            PKG=$(grep -m1 -oE 'ERROR: package/[^ ]+ failed' /tmp/world.log | sed 's/ERROR: //; s/ failed//')
+            PKG=$(grep -m1 -oE 'ERROR: package/[^ ]+ failed' /tmp/world.log | sed 's/ERROR: //; s/ failed//') || true
             echo "::group::Failed package: ${PKG:-unknown}"
             if [ -n "$PKG" ]; then
-              make -j1 V=s "$PKG/compile" 2>&1 | tail -250
+              make -j1 V=s "$PKG/compile" 2>&1 | tail -250 || true
             else
-              make -j1 V=s 2>&1 | tail -250
+              make -j1 V=s 2>&1 | tail -250 || true
             fi
             echo "::endgroup::"
             exit 1
