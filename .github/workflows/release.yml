@@ -92,7 +92,20 @@ jobs:
         run: make download -j"$(nproc)"
 
       - name: Build ${{ matrix.target }}
-        run: make -j"$(nproc)"
+        run: |
+          if make -j"$(nproc)" 2>&1 | tee /tmp/world.log; then
+            true
+          else
+            PKG=$(grep -m1 -oE 'ERROR: package/[^ ]+ failed' /tmp/world.log | sed 's/ERROR: //; s/ failed//')
+            echo "::group::Failed package: ${PKG:-unknown}"
+            if [ -n "$PKG" ]; then
+              make -j1 V=s "$PKG/compile" 2>&1 | tail -250
+            else
+              make -j1 V=s 2>&1 | tail -250
+            fi
+            echo "::endgroup::"
+            exit 1
+          fi
 
       - name: Pack ${{ matrix.target }}
         run: |
