@@ -4,6 +4,17 @@ English | [简体中文](README_zh.md)
 
 PonWrt is based on [ImmortalWrt](https://github.com/immortalwrt/immortalwrt) and adds support for Airoha AN7581 and AN7583 PON devices.
 
+## 🔧 修改说明（本 fork）
+
+本仓库为 [pbs05/ponwrt](https://github.com/pbs05/ponwrt) 的个人 fork，通过 GitHub Actions 云编译生成含自定义插件与 UPnP 的全机型固件（AN7581 / AN7583）。相对上游的主要修改：
+
+- **第三方插件 feed**：`feeds.conf.default` 追加 `kenzok8/small-package`（feed 名 `smallpackage`）。
+- **自定义插件集**：新增 `configs/zk-apps.config`，集成 8 项插件：iStore 商店（`luci-app-store`）、iStoreX 首页（`luci-app-istorex`）、网络代理（`daed` / `luci-app-daede`）、`quickfile`、反向代理（`lucky` / `luci-app-lucky`）、`zram-swap` / `luci-app-zram-swap`、`vlmcsd` / `luci-app-vlmcsd`、`openlist2` / `luci-app-openlist2`。
+- **启用 UPnP**：默认集成 `miniupnpd` 2.3.11（nftables 变体）。
+- **云编译工作流**：`.github/workflows/release.yml` 一键构建 AN7581 / AN7583 全机型并自动发布 Release；Build 失败时自动以 `V=s` 重跑并输出诊断日志。
+- **修复 miniupnpd 编译失败**：ImmortalWrt packages feed 升级 miniupnpd 至 2.3.11 后未同步刷新补丁，`020/030/040` 三个补丁打不上导致编译失败。构建流程在安装 feeds 后自动删除这三个过时补丁（其修复已随 2.3.11 上游源码内置 / 纯日志美化），UPnP 功能不受影响。
+
+
 ## ⚠️ Disclaimer
 
 PonWrt is an open-source firmware project intended for research and development.
