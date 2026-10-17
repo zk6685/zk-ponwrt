@@ -117,14 +117,20 @@ jobs:
       - name: Pack ${{ matrix.target }}
         run: |
           mkdir release
-          tar --zstd -cf "release/ponwrt-${{ matrix.target }}.tar.zst" \
-            -C bin/targets/airoha "${{ matrix.target }}"
+          # 固件镜像：target 目录顶层所有文件（排除 packages 子目录与自带 sha256sums）独立上传
+          find bin/targets/airoha/${{ matrix.target }} -maxdepth 1 -type f \
+            ! -name 'sha256sums' -exec cp {} release/ \;
+          # 软件包仓库（供之后安装额外插件）
+          if [ -d bin/targets/airoha/${{ matrix.target }}/packages ]; then
+            tar --zstd -cf "release/ponwrt-${{ matrix.target }}-packages.tar.zst" \
+              -C bin/targets/airoha/${{ matrix.target }} packages
+          fi
 
       - name: Upload ${{ matrix.target }}
         uses: actions/upload-artifact@v4
         with:
           name: ponwrt-${{ matrix.target }}
-          path: release/*.tar.zst
+          path: release/*
           if-no-files-found: error
           retention-days: 7
 
@@ -145,7 +151,7 @@ jobs:
 
       - name: Create checksums
         working-directory: release
-        run: sha256sum *.tar.zst > sha256sums
+        run: sha256sum * > sha256sums
 
       - name: Create GitHub release
         env:
@@ -155,8 +161,7 @@ jobs:
         run: |
           args=(
             "$RELEASE_TAG"
-            release/*.tar.zst
-            release/sha256sums
+            release/*
             --repo "$GITHUB_REPOSITORY"
             --target "$GITHUB_SHA"
             --title "PonWrt $RELEASE_TAG"
@@ -166,4 +171,5 @@ jobs:
             args+=(--prerelease)
           fi
           gh release create "${args[@]}"
+
 
