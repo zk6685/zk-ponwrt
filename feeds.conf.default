@@ -9,3 +9,4 @@ src-git pon_userspace https://github.com/pbs05/openwrt-pon-userspace.git
 #src-git oldpackages http://git.openwrt.org/packages.git
 #src-link custom /usr/src/openwrt/custom-feed
 src-git smallpackage https://github.com/kenzok8/small-package.git;main
+src-git npu https://github.com/rchen14b/luci-app-airoha-npu.git;main
