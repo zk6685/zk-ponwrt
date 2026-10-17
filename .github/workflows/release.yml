@@ -70,6 +70,34 @@ jobs:
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
+      - name: Vendor custom packages (override feeds with pinned sources)
+        run: |
+          set -e
+          mkdir -p package
+          # lucky: gdy666 作者完整版（含 /etc/init.d/lucky 与 /etc/config/lucky，替代 small-package 残缺版）
+          git clone --depth=1 https://github.com/gdy666/luci-app-lucky.git /tmp/v-lucky
+          rm -rf /tmp/v-lucky/.git
+          cp -r /tmp/v-lucky/lucky /tmp/v-lucky/luci-app-lucky package/
+          # Airoha NPU 监控: luanmuc 1.2.1（根目录即包，替代索引失败的 rchen14b feed）
+          git clone --depth=1 https://github.com/luanmuc/luci-app-airoha-npu.git /tmp/v-npu
+          rm -rf /tmp/v-npu/.git
+          cp -r /tmp/v-npu package/luci-app-airoha-npu
+          # gecoosac 集客 AC: laipeng668（gecoosac 核心 + luci 界面）
+          git clone --depth=1 https://github.com/laipeng668/luci-app-gecoosac.git /tmp/v-gco
+          rm -rf /tmp/v-gco/.git
+          cp -r /tmp/v-gco/gecoosac /tmp/v-gco/luci-app-gecoosac package/
+          # openlist2: laipeng668（openlist2 核心 + luci 界面，替代 small-package 版本）
+          git clone --depth=1 https://github.com/laipeng668/luci-app-openlist2.git /tmp/v-ol
+          rm -rf /tmp/v-ol/.git
+          cp -r /tmp/v-ol/openlist2 /tmp/v-ol/luci-app-openlist2 package/
+          # dae/daed 新版 2026.09.30：覆盖 immortalwrt packages 旧 daed 1.27.0（修复 eBPF helper 加载失败）
+          git clone --depth=1 https://github.com/kenzok8/small-package.git /tmp/v-sp
+          rm -rf /tmp/v-sp/.git
+          cp -r /tmp/v-sp/dae /tmp/v-sp/daed /tmp/v-sp/luci-app-dae /tmp/v-sp/luci-app-daede package/ 2>/dev/null || true
+          # 清理误带进来的 .git / 临时文件
+          find package -name '.git' -type d -prune -exec rm -rf {} + 2>/dev/null || true
+          echo "Vendored packages:"; ls package
+
       - name: Drop obsolete miniupnpd patches (fixes upstreamed in 2.3.11)
         run: |
           rm -f feeds/packages/net/miniupnpd/patches/020-descr-filter-fix.patch
@@ -120,10 +148,10 @@ jobs:
           # 固件镜像：target 目录顶层所有文件（排除 packages 子目录与自带 sha256sums）独立上传
           find bin/targets/airoha/${{ matrix.target }} -maxdepth 1 -type f \
             ! -name 'sha256sums' -exec cp {} release/ \;
-          # 软件包仓库（供之后安装额外插件）
-          if [ -d bin/targets/airoha/${{ matrix.target }}/packages ]; then
+          # 完整软件源：bin/packages（含全部 feed 插件包 daed/lucky/gecoosac/openlist2 等）
+          if [ -d bin/packages ]; then
             tar --zstd -cf "release/ponwrt-${{ matrix.target }}-packages.tar.zst" \
-              -C bin/targets/airoha/${{ matrix.target }} packages
+              -C bin packages
           fi
 
       - name: Upload ${{ matrix.target }}
