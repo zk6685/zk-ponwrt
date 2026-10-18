@@ -98,6 +98,13 @@ jobs:
           cp -f /tmp/v-lucky/LICENSE /tmp/v-npu/LICENSE /tmp/v-gco/LICENSE /tmp/v-ol/LICENSE package/ 2>/dev/null || true
           # 清理误带进来的 .git / 临时文件
           find package -name '.git' -type d -prune -exec rm -rf {} + 2>/dev/null || true
+          # 删除 feeds 中与 vendored 重名的包目录，确保 vendored 版本生效（否则 feeds 同名包优先，
+          # 例如 feeds/smallpackage/luci-app-gecoosac 1.0.1 会与 gecoosac 核心争抢 /etc/config/gecoosac 导致文件冲突）
+          rm -rf feeds/smallpackage/luci-app-gecoosac \
+                 feeds/smallpackage/lucky feeds/smallpackage/luci-app-lucky \
+                 feeds/smallpackage/openlist2 feeds/smallpackage/luci-app-openlist2 \
+                 feeds/smallpackage/dae feeds/smallpackage/daed \
+                 feeds/smallpackage/luci-app-dae feeds/smallpackage/luci-app-daede 2>/dev/null || true
           echo "Vendored packages:"; ls package
 
       - name: Drop obsolete miniupnpd patches (fixes upstreamed in 2.3.11)
