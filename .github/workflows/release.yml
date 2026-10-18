@@ -94,6 +94,8 @@ jobs:
           git clone --depth=1 https://github.com/kenzok8/small-package.git /tmp/v-sp
           rm -rf /tmp/v-sp/.git
           cp -r /tmp/v-sp/dae /tmp/v-sp/daed /tmp/v-sp/luci-app-dae /tmp/v-sp/luci-app-daede package/ 2>/dev/null || true
+          # 各仓库根 LICENSE 一并复制到 package/（gecoosac 等包 Build/Prepare 里 cp ../LICENSE）
+          cp -f /tmp/v-lucky/LICENSE /tmp/v-npu/LICENSE /tmp/v-gco/LICENSE /tmp/v-ol/LICENSE package/ 2>/dev/null || true
           # 清理误带进来的 .git / 临时文件
           find package -name '.git' -type d -prune -exec rm -rf {} + 2>/dev/null || true
           echo "Vendored packages:"; ls package
