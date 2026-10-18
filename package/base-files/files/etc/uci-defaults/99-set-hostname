@@ -1,0 +1,1 @@
+#!/bin/sh\nuci set system.@system[0].hostname='zk-daepon'\nuci commit system\nexit 0\n
