@@ -131,7 +131,7 @@ jobs:
           find bin/targets/airoha/${{ matrix.target }} -maxdepth 1 -type f ! -name 'sha256sums' -exec cp {} release/ \;
           tar --zstd -cf "release/ponwrt-${{ matrix.target }}-packages.tar.zst" \
             -C bin packages \
-            -C .. targets/airoha/${{ matrix.target }}/packages
+            -C .. bin/targets/airoha/${{ matrix.target }}/packages
 
       - name: Upload ${{ matrix.target }}
         uses: actions/upload-artifact@v4
