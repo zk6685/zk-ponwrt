@@ -70,6 +70,36 @@ jobs:
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
+      # ---- zk6685: Vendor custom packages (沿用原来源) ----
+      - name: Vendor custom packages
+        run: |
+          set -e
+          # gdy666/luci-app-lucky -> lucky + luci-app-lucky (full procd init + config)
+          git clone --depth=1 https://github.com/gdy666/luci-app-lucky.git /tmp/v-lucky
+          cp -r /tmp/v-lucky/lucky package/lucky
+          cp -r /tmp/v-lucky/luci-app-lucky package/luci-app-lucky
+          # laipeng668/luci-app-gecoosac -> gecoosac + luci-app-gecoosac
+          git clone --depth=1 https://github.com/laipeng668/luci-app-gecoosac.git /tmp/v-gecoosac
+          cp -r /tmp/v-gecoosac/gecoosac package/gecoosac
+          cp -r /tmp/v-gecoosac/luci-app-gecoosac package/luci-app-gecoosac
+          # gecoosac Build/Prepare does `cp ../LICENSE`; ensure parent LICENSE exists
+          cp /tmp/v-gecoosac/LICENSE package/LICENSE
+          # luanmuc/luci-app-airoha-npu (root Makefile, po/ auto i18n)
+          git clone --depth=1 https://github.com/luanmuc/luci-app-airoha-npu.git package/luci-app-airoha-npu
+          # eamonxg aurora theme + config
+          git clone --depth=1 https://github.com/eamonxg/luci-theme-aurora.git package/luci-theme-aurora
+          git clone --depth=1 https://github.com/eamonxg/luci-app-aurora-config.git package/luci-app-aurora-config
+          # remove feeds same-name packages so vendored versions take effect
+          rm -rf feeds/smallpackage/lucky feeds/smallpackage/luci-app-lucky \
+                 feeds/smallpackage/luci-app-gecoosac \
+                 feeds/smallpackage/dae feeds/smallpackage/daed \
+                 feeds/smallpackage/luci-app-dae feeds/smallpackage/luci-app-daede \
+                 feeds/smallpackage/daed-next feeds/smallpackage/luci-app-daed-next
+          # strip nested .git dirs
+          find package/lucky package/luci-app-lucky package/gecoosac package/luci-app-gecoosac \
+               package/luci-app-airoha-npu package/luci-theme-aurora package/luci-app-aurora-config \
+               -name .git -type d -prune -exec rm -rf {} + 2>/dev/null || true
+
       - name: Load repository signing key
         env:
           PONWRT_APK_PRIVATE_KEY: ${{ secrets.PONWRT_APK_PRIVATE_KEY }}
@@ -84,7 +114,8 @@ jobs:
         run: |
           ./scripts/kconfig.pl + \
             "configs/${{ matrix.target }}.config" \
-            configs/release.config > .config
+            configs/release.config \
+            configs/zk-apps.config > .config
           make defconfig
 
       - name: Download sources
@@ -93,11 +124,14 @@ jobs:
       - name: Build ${{ matrix.target }}
         run: make -j"$(nproc)"
 
+      # ---- zk6685: Pack target image + full packages repo (供后期 apk add) ----
       - name: Pack ${{ matrix.target }}
         run: |
           mkdir release
           tar --zstd -cf "release/ponwrt-${{ matrix.target }}.tar.zst" \
             -C bin/targets/airoha "${{ matrix.target }}"
+          tar --zstd -cf "release/ponwrt-${{ matrix.target }}-packages.tar.zst" \
+            -C bin packages
 
       - name: Upload ${{ matrix.target }}
         uses: actions/upload-artifact@v4
