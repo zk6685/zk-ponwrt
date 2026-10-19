@@ -31,7 +31,6 @@ jobs:
       matrix:
         target:
           - an7581
-          - an7583
 
     steps:
       - uses: actions/checkout@v6
@@ -128,8 +127,8 @@ jobs:
       - name: Pack ${{ matrix.target }}
         run: |
           mkdir release
-          tar --zstd -cf "release/ponwrt-${{ matrix.target }}.tar.zst" \
-            -C bin/targets/airoha "${{ matrix.target }}"
+          # upload firmware images independently + full packages repo for later install
+          find bin/targets/airoha/${{ matrix.target }} -maxdepth 1 -type f ! -name 'sha256sums' -exec cp {} release/ \;
           tar --zstd -cf "release/ponwrt-${{ matrix.target }}-packages.tar.zst" \
             -C bin packages
 
@@ -137,7 +136,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ponwrt-${{ matrix.target }}
-          path: release/*.tar.zst
+          path: release/*
           if-no-files-found: error
           retention-days: 7
 
@@ -158,7 +157,7 @@ jobs:
 
       - name: Create checksums
         working-directory: release
-        run: sha256sum *.tar.zst > sha256sums
+        run: sha256sum * > sha256sums
 
       - name: Create GitHub release
         env:
@@ -168,7 +167,7 @@ jobs:
         run: |
           args=(
             "$RELEASE_TAG"
-            release/*.tar.zst
+            release/*
             release/sha256sums
             --repo "$GITHUB_REPOSITORY"
             --target "$GITHUB_SHA"
