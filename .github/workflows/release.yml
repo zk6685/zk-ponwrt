@@ -54,7 +54,7 @@ jobs:
             libtool libyaml-dev lld llvm ninja-build p7zip-full patch pkgconf \
             python3 python3-docutils python3-pip python3-ply python3-pyelftools \
             qemu-utils re2c rsync scons squashfs-tools subversion swig texinfo \
-            uglifyjs unzip wget xmlto xxd zlib1g-dev zstd
+            uglifyjs unzip wget xmlto xxd zlib1g-dev zstd pahole
 
       - name: Cache downloads
         uses: actions/cache@v4
