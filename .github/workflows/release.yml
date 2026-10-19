@@ -159,6 +159,20 @@ jobs:
         working-directory: release
         run: sha256sum * > sha256sums
 
+      - name: Compose release body
+        run: |
+          mkdir -p /tmp/relnotes
+          cat > /tmp/relnotes/body.md <<EOF
+          ## PonWrt ${{ inputs.tag }}（Airoha AN7581 · build by zk6685）
+
+          - **目标平台**：Airoha AN7581（光猫一体机）
+          - **主机名**：zk-ponwrt
+          - **内置插件**：iStoreX / iStore 应用商店、Aurora 主题+配置、vlmcsd(KMS)、zram-swap、gecoosac(集客无线AC)、quickfile(网页文件管理)、Airoha-NPU 监控+汉化、htop
+          - **软件源内置（后期可 apk add 按需安装）**：dae / daed、openclash、passwall、lucky、openlist、zerotier、tailscale
+          - **固件镜像**：各机型独立 .itb（initramfs-recovery / squashfs-sysupgrade），按需选择刷机
+          - **软件包仓库**：ponwrt-an7581-packages.tar.zst（完整 bin/packages，供后期在线/离线安装插件）
+          EOF
+
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -172,7 +186,7 @@ jobs:
             --repo "$GITHUB_REPOSITORY"
             --target "$GITHUB_SHA"
             --title "PonWrt $RELEASE_TAG"
-            --generate-notes
+            --notes-file /tmp/relnotes/body.md
           )
           if [ "$PRERELEASE" = true ]; then
             args+=(--prerelease)
