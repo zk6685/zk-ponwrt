@@ -130,7 +130,8 @@ jobs:
           # upload firmware images independently + full packages repo for later install
           find bin/targets/airoha/${{ matrix.target }} -maxdepth 1 -type f ! -name 'sha256sums' -exec cp {} release/ \;
           tar --zstd -cf "release/ponwrt-${{ matrix.target }}-packages.tar.zst" \
-            -C bin packages
+            -C bin packages \
+            -C .. targets/airoha/${{ matrix.target }}/packages
 
       - name: Upload ${{ matrix.target }}
         uses: actions/upload-artifact@v4
@@ -169,8 +170,9 @@ jobs:
           - **主机名**：zk-ponwrt
           - **内置插件**：iStoreX / iStore 应用商店、Aurora 主题+配置、vlmcsd(KMS)、zram-swap、gecoosac(集客无线AC)、quickfile(网页文件管理)、Airoha-NPU 监控+汉化、htop
           - **软件源内置（后期可 apk add 按需安装）**：dae / daed、openclash、passwall、lucky、openlist、zerotier、tailscale
+          - **内核 BTF**：已开 CONFIG_DEBUG_INFO_BTF（dae/daed 免 vmlinux-btf 补包，/sys/kernel/btf/vmlinux 内置）
           - **固件镜像**：各机型独立 .itb（initramfs-recovery / squashfs-sysupgrade），按需选择刷机
-          - **软件包仓库**：ponwrt-an7581-packages.tar.zst（完整 bin/packages，供后期在线/离线安装插件）
+          - **软件包仓库**：ponwrt-an7581-packages.tar.zst，含两个源：`packages/aarch64_cortex-a53`（普通插件）+ `targets/airoha/an7581/packages`（kmod 内核模块，如 kmod-sched-bpf/veth/xdp-sockets-diag），离线安装时把两个目录都添加为 apk 源
           EOF
 
       - name: Create GitHub release
