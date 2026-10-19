@@ -182,7 +182,6 @@ jobs:
           args=(
             "$RELEASE_TAG"
             release/*
-            release/sha256sums
             --repo "$GITHUB_REPOSITORY"
             --target "$GITHUB_SHA"
             --title "PonWrt $RELEASE_TAG"
