@@ -121,7 +121,12 @@ jobs:
         run: make download -j"$(nproc)"
 
       - name: Build ${{ matrix.target }}
-        run: make -j2
+        run: |
+          make -j2 || {
+            echo "=== Build failed, dumping python3 verbose ==="
+            make package/feeds/packages/python3/compile V=s -j1
+            exit 1
+          }
 
       # ---- zk6685: Pack target image + full packages repo (供后期 apk add) ----
       - name: Pack ${{ matrix.target }}
