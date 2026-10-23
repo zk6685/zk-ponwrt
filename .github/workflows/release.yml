@@ -68,6 +68,11 @@ jobs:
         run: |
           ./scripts/feeds update -a
           ./scripts/feeds install -a
+          # ---- zk6685: 卸载 python3 全家桶（上游 3.14.7 _ctypes 需 libffi，feeds 无此包）----
+          ./scripts/feeds uninstall python3 2>/dev/null || true
+          for p in $(./scripts/feeds list 2>/dev/null | grep -E '^python3' || true); do
+            ./scripts/feeds uninstall "$p" 2>/dev/null || true
+          done
 
       # ---- zk6685: Vendor custom packages (沿用原来源) ----
       - name: Vendor custom packages
