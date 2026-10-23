@@ -121,7 +121,7 @@ jobs:
         run: make download -j"$(nproc)"
 
       - name: Build ${{ matrix.target }}
-        run: make -j"$(nproc)"
+        run: make -j2
 
       # ---- zk6685: Pack target image + full packages repo (供后期 apk add) ----
       - name: Pack ${{ matrix.target }}
@@ -167,7 +167,7 @@ jobs:
           ## PonWrt ${{ inputs.tag }}（Airoha AN7581 · build by zk6685）
 
           - **目标平台**：Airoha AN7581（光猫一体机）
-          - **主机名**：zk-ponwrt
+          - **主机名**：DAEPON
           - **内置插件**：iStoreX / iStore 应用商店、Aurora 主题+配置、vlmcsd(KMS)、zram-swap、gecoosac(集客无线AC)、quickfile(网页文件管理)、Airoha-NPU 监控+汉化、htop
           - **软件源内置（后期可 apk add 按需安装）**：dae / daed、openclash、passwall、lucky、openlist、zerotier、tailscale
           - **内核 BTF**：已开 CONFIG_DEBUG_INFO_BTF（dae/daed 免 vmlinux-btf 补包，/sys/kernel/btf/vmlinux 内置）
