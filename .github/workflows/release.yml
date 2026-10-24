@@ -137,6 +137,20 @@ jobs:
           tar --zstd -cf "release/ponwrt-${{ matrix.target }}-packages.tar.zst" \
             -C bin packages \
             -C .. bin/targets/airoha/${{ matrix.target }}/packages
+          # zk6685: 文件名加 zk- 前缀 + 日期时间后缀
+          TS=$(date +%Y%m%d-%H.%M.%S)
+          cd release
+          for f in *; do
+            base="${f%.*}"
+            ext="${f##*.}"
+            # 处理 .tar.zst 双扩展名
+            if [[ "$f" == *.tar.zst ]]; then
+              base="${f%.tar.zst}"
+              ext="tar.zst"
+            fi
+            mv "$f" "zk-${base}-${TS}.${ext}"
+          done
+          cd ..
 
       - name: Upload ${{ matrix.target }}
         uses: actions/upload-artifact@v4
